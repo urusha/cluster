@@ -1,0 +1,178 @@
+#!/usr/bin/python
+
+# Agent for EnerGenie EG-PDU-001 and similar.
+# Author: Sergey Urushkin
+#
+# WARNING:
+# Since all port statuses of this PDU are contained in the single OID,
+# race-condition could be met while switching port status.
+# To minimize its probability:
+# * this agent switches ALL ports ON on 'action=on', this means that
+#   switching a port OFF statically can't be guaranteed and
+#   'action=off' MUST NOT be used with this agent in production;
+# * OFF-delay MUST be set to zero for all ports (.1.3.6.1.4.1.17420.1.2.9.1.22.0 = "0,0,0,0,0,0,0,0").
+#
+# TODO:
+# * port discover.
+
+import sys
+sys.path.append("/usr/share/fence")
+from fencing import *
+from fencing_snmp import *
+
+#BEGIN_VERSION_GENERATION
+RELEASE_VERSION="4.0.2"
+BUILD_DATE="(built Tue Jun 10 06:59:12 UTC 2014)"
+REDHAT_COPYRIGHT="Copyright (C) Red Hat, Inc. 2004-2010 All rights reserved."
+#END_VERSION_GENERATION
+
+### CONSTANTS ###
+# oid defining fence device
+OID_SYS_OBJECT_ID = '.1.3.6.1.2.1.1.2.0'
+
+### GLOBAL VARIABLES ###
+device = None
+
+# Port ID
+port_id = None
+# Switch ID
+switch_id = None
+
+# Classes describing Device params
+class PDU:
+	status_oid =       '.1.3.6.1.4.1.17420.1.2.9.1.13.0'
+	control_oid =      '.1.3.6.1.4.1.17420.1.2.9.1.13.0'
+	outlet_table_oid = '.1.3.6.1.4.1.17420.1.2.9.1.14'
+	ident_str = "EnerGenie PDU"
+	state_on = 1
+	state_off = 0
+	turn_on = 1
+	turn_off = 0
+	has_switches = False
+
+### FUNCTIONS ###
+def pdu_set_device(conn, options):
+	global device
+
+	agents_dir = {'.1.3.6.1.4.1.17420.1.2.9.1.20.0':PDU,
+		    None:PDU}
+
+	# First resolve type of PDU device
+	pdu_type = conn.walk(OID_SYS_OBJECT_ID)
+
+	if (not ((len(pdu_type)==1) and (agents_dir.has_key(pdu_type[0][1])))):
+		pdu_type = [[None, None]]
+
+	device = agents_dir[pdu_type[0][1]]
+
+	conn.log_command("Trying %s"%(device.ident_str))
+
+def pdu_resolv_port_id(conn, options):
+	global port_id, switch_id
+
+	if (device==None):
+		pdu_set_device(conn, options)
+
+	# Now we resolv port_id/switch_id
+	if ((options["--plug"].isdigit()) and ((not device.has_switches) or (options["--switch"].isdigit()))):
+		port_id = int(options["--plug"])
+
+		if (device.has_switches):
+			switch_id = int(options["--switch"])
+	else:
+		table = conn.walk(device.outlet_table_oid, 30)
+
+		for x in table:
+			if (x[1].strip('"')==options["--plug"]):
+				t = x[0].split('.')
+				if (device.has_switches):
+					port_id = int(t[len(t)-1])
+					switch_id = int(t[len(t)-3])
+				else:
+					port_id = int(t[len(t)-1])
+
+	if (port_id==None or port_id<1 or port_id>8):
+		fail_usage("Can't find port with name %s!"%(options["--plug"]))
+
+def get_power_status(conn, options):
+	if (port_id==None):
+		pdu_resolv_port_id(conn, options)
+
+	oid = device.status_oid
+
+	(oid, status) = conn.get(oid)
+	status = status.strip('"').split(',')[port_id-1]
+	return (status==str(device.state_on) and "on" or "off")
+
+def set_power_status(conn, options):
+	if (port_id==None):
+		pdu_resolv_port_id(conn, options)
+
+	oid = device.control_oid
+
+	if (options["--action"]=="on"):
+	    newstatus = "1,1,1,1,1,1,1,1"
+	else:
+	    status_str = {1: "0,1,1,1,1,1,1,1",
+			2: "1,0,1,1,1,1,1,1",
+			3: "1,1,0,1,1,1,1,1",
+			4: "1,1,1,0,1,1,1,1",
+			5: "1,1,1,1,0,1,1,1",
+			6: "1,1,1,1,1,0,1,1",
+			7: "1,1,1,1,1,1,0,1",
+			8: "1,1,1,1,1,1,1,0",
+	    }
+	    newstatus = status_str[port_id]
+
+	conn.set(oid,newstatus)
+
+def get_outlets_status(conn, options):
+	result = {}
+
+	if (device == None):
+		pdu_set_device(conn, options)
+
+	res_ports = conn.walk(device.outlet_table_oid, 30)
+
+	print res_ports
+
+	for x in res_ports:
+		t = x[0].split('.')
+
+		port_num = ((device.has_switches) and "%s:%s"%(t[len(t)-3], t[len(t)-1]) or "%s"%(t[len(t)-1]))
+
+		port_name = x[1].strip('"')
+		port_status = ""
+		result[port_num] = (port_name, port_status)
+
+	return result
+
+# Main agent method
+def main():
+	device_opt = [ "ipaddr", "login", "passwd", "no_login", "no_password", \
+		       "port", "snmp_version", "community" ]
+
+	atexit.register(atexit_handler)
+
+	snmp_define_defaults ()
+	all_opt["snmp_version"]["default"] = "1"
+	all_opt["community"]["default"] = "private"
+	device = PDU
+		
+	options = check_input(device_opt, process_input(device_opt))
+
+	docs = { }
+	docs["shortdesc"] = "Fence agent for EnerGenie over SNMP"
+	docs["longdesc"] = "fence_energenie is an I/O Fencing agent \
+which can be used with the EnerGenie network power switch. It logs \
+into a device via SNMP and reboots a specified outlet. It supports \
+SNMP v1 and v3 with all combinations of  authenticity/privacy settings."
+	docs["vendorurl"] = "http://www.energenie.com"
+	show_docs(options, docs)
+
+	# Operate the fencing device
+	result = fence_action(FencingSnmp(options), options, set_power_status, get_power_status, get_outlets_status)
+
+	sys.exit(result)
+if __name__ == "__main__":
+	main()
