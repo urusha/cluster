@@ -19,8 +19,8 @@ elif [ -n "$1" ]; then
     exit 1
 fi
 
-if [ "$RSF" != "YES" ] && pcs status | grep -q "Stopped"; then
-    echo "Cluster has 'Stopped' resources. Exiting..."
+if [ "$RSF" != "YES" ] && pcs status | grep -qE 'Stopped|Failed'; then
+    echo "Cluster has 'Stopped' or 'Failed' resources. Exiting..."
     exit 1
 fi
 
