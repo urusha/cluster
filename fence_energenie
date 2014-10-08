@@ -169,6 +169,11 @@ into a device via SNMP and reboots a specified outlet. It supports \
 SNMP v1 only."
 	docs["vendorurl"] = "http://www.energenie.com"
 	show_docs(options, docs)
+	
+	## Do the delay of the fence device before logging in
+	## Delay is important for two-node clusters fencing but we do not need to delay 'status' operations
+	if options["--action"] in ["off", "reboot"]:
+		time.sleep(int(options["--delay"]))
 
 	# Operate the fencing device
 	result = fence_action(FencingSnmp(options), options, set_power_status, get_power_status, get_outlets_status)
