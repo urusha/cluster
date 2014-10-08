@@ -20,7 +20,7 @@ elif [ -n "$1" ]; then
 fi
 
 if [ "$RSF" != "YES" ] && crm_mon -1 | grep -qE 'Stopped|Failed'; then
-    echo "Cluster has 'Stopped' or 'Failed' resources. Exiting..."
+    echo "Cluster has 'Stopped' or 'Failed' resources or actions. Exiting..."
     exit 1
 fi
 
