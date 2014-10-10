@@ -2,7 +2,8 @@
 
 VMNODESCORE="20"
 VMPATH="/srv/libvirt/qemu"
-VMOPT="migration_transport=ssh autoset_utilization_cpu=true autoset_utilization_hv_memory=true meta allow-migrate=true \
+VMOPT="migration_transport=ssh  meta allow-migrate=true \
+    autoset_utilization_cpu=true autoset_utilization_hv_memory=true \
     op start timeout=30 op stop timeout=120 migrate_to timeout=120 op migrate_from timeout=120"
 
 ###
@@ -20,4 +21,3 @@ pcs resource create "kvm_$VMNAME" ocf:heartbeat:VirtualDomain config="$VMPATH/$V
     pcs constraint order libvirtd-clone then "kvm_$VMNAME" &&
     pcs constraint location "kvm_$VMNAME" prefers "$VMNODE=$VMNODESCORE" ||
     { echo "Error while creating domain '$VMNAME'"; exit 1; }
-    
