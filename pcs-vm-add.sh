@@ -18,5 +18,6 @@ crm_mon -1n | grep -q "^Node $VMNODE " || { echo "Node '$VMNODE' doesn't exist i
 
 pcs resource create "kvm_$VMNAME" ocf:heartbeat:VirtualDomain config="$VMPATH/$VMNAME.xml" $VMOPT &&
     pcs constraint order libvirtd-clone then "kvm_$VMNAME" &&
-    pcs constraint location "kvm_$VMNAME" prefers "$VMNODE=$VMNODESCORE" || { echo "Error while creating domain '$VMNAME'"; exit 1; }
+    pcs constraint location "kvm_$VMNAME" prefers "$VMNODE=$VMNODESCORE" ||
+    { echo "Error while creating domain '$VMNAME'"; exit 1; }
     
