@@ -1,7 +1,7 @@
 cluster
 =======
 
-Cluster stuff
+Pacemaker stuff
 
 * fence_energenie - fence agent for EnerGenie EG-PDU-001 and similar.
 * pcmk_smtp_helper.sh - ocf:pacemaker:ClusterMon smtp helper
