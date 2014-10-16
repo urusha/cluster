@@ -2,8 +2,8 @@
 
 VMNODESCORE="20"
 VMPATH="/srv/libvirt/qemu"
-VMOPT="migration_transport=ssh  meta allow-migrate=true \
-    autoset_utilization_cpu=true autoset_utilization_hv_memory=true \
+VMOPT="migration_transport=ssh meta allow-migrate=true \
+    meta autoset_utilization_cpu=true meta autoset_utilization_hv_memory=true \
     op start timeout=30 op stop timeout=120 op migrate_to timeout=120 op migrate_from timeout=120"
 
 ###
