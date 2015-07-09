@@ -10,4 +10,4 @@ Pacemaker stuff
 * pcs-stickiness.sh - script sets resource-stickiness to zero and after timeout sets it back to higher value, allowing resources to move due to location constraints.
 * pcs-vm-add.sh - script creates kvm-domain resource, order and location constraints
 * pcs-drbd-verify.sh - script verifies drbd resources and restarts pacemaker if required
-* pcs-vm-setmem.sh - script sets current domain memory to maximum or default value, according to domain xml
+* pcs-vm-setmem.sh - script sets current memory of all domains to maximum or default value, according to domain xml
