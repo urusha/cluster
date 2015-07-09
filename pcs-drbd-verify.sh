@@ -2,7 +2,7 @@
 
 export LANG=C
 
-if crm_mon -1n | grep -qi 'offline'; then
+if crm_mon -1n | grep -qi ': offline'; then
     echo "Cluster has offline node(s). Exiting"
     exit 1
 fi
