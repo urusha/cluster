@@ -28,8 +28,6 @@ for DOMRES in ${DOMRESS}; do
 	DOMMEMSET="$DOMMEMMAX"
     fi
 
-#    echo "$DOMXML	$DOMNAME	$DOMNODE	cur:$DOMMEMCUR	def:$DOMMEMDEF	max:$DOMMEMMAX"
-
     if [ "$DOMMEMCUR" -ne "$DOMMEMSET" ]; then
         virsh -c "qemu+ssh://$DOMNODE/system" setmem "$DOMNAME" "$DOMMEMSET" --live > /dev/null
     fi
