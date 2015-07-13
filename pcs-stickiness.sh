@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # timeout
-TIMEOUT="120"
+TIMEOUT="60"
 # resource-stickiness
 RS="100"
 
@@ -19,8 +19,8 @@ elif [ -n "$1" ]; then
     exit 1
 fi
 
-if [ "$RSF" != "YES" ] && crm_mon -1r | grep -qE 'Stopped|Failed'; then
-    echo "Cluster has 'Stopped' or 'Failed' resources or actions. Exiting..."
+if [ "$RSF" != "YES" ] && crm_mon -1n | grep -qE ':[[:space:]]+(offline|Stopped|Failed)[[:space:]]*$'; then
+    echo "Cluster has offline node or stopped/failed resources/actions. Exiting"
     exit 1
 fi
 
