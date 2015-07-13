@@ -11,3 +11,4 @@ Pacemaker stuff
 * pcs-vm-add.sh - script creates kvm-domain resource, order and location constraints
 * pcs-drbd-verify.sh - script verifies drbd resources and restarts pacemaker if required
 * pcs-vm-setmem.sh - script sets current memory of all domains to maximum or default value, according to domain xml
+* VirtualDomain.patch - patch makes VirtualDomain resource agent understand "migration_unsafe" attribute, which allows to do unsafe live migration of domains. This is needed because: 1) generally it's only safe to use cache='writethrough' with QEMU domains and DRBD (see http://forum.proxmox.com/threads/18259-KVM-on-top-of-DRBD-and-out-of-sync-long-term-investigation-results ); 2) live migration of domain with cache='writethrough' requires using 'virsh migrate' with '--unsafe' argument. Don't worry, it's completely safe to use 'unsafe' live migration with DRBD protocol-C and cache='writethrough'.
