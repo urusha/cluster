@@ -1,0 +1,51 @@
+--- /usr/lib/ocf/resource.d/heartbeat/VirtualDomain.old	2015-07-11 23:34:26.962727858 +0300
++++ /usr/lib/ocf/resource.d/heartbeat/VirtualDomain	2015-07-12 00:11:12.000000000 +0300
+@@ -21,12 +21,14 @@
+ OCF_RESKEY_autoset_utilization_cpu_default="true"
+ OCF_RESKEY_autoset_utilization_hv_memory_default="true"
+ OCF_RESKEY_migrateport_default=$(( 49152 + $(ocf_maybe_random) % 64 ))
++OCF_RESKEY_migration_unsafe_default="false"
+ OCF_RESKEY_CRM_meta_timeout_default=90000
+ 
+ : ${OCF_RESKEY_force_stop=${OCF_RESKEY_force_stop_default}}
+ : ${OCF_RESKEY_autoset_utilization_cpu=${OCF_RESKEY_autoset_utilization_cpu_default}}
+ : ${OCF_RESKEY_autoset_utilization_hv_memory=${OCF_RESKEY_autoset_utilization_hv_memory_default}}
+ : ${OCF_RESKEY_migrateport=${OCF_RESKEY_migrateport_default}}
++: ${OCF_RESKEY_migration_unsafe=${OCF_RESKEY_migration_unsafe_default}}
+ : ${OCF_RESKEY_CRM_meta_timeout=${OCF_RESKEY_CRM_meta_timeout_default}}
+ #######################################################################
+ 
+@@ -111,6 +113,15 @@
+ <content type="string" default="" />
+ </parameter>
+ 
++<parameter name="migration_unsafe" unique="0" required="0">
++<longdesc lang="en">
++If set to true, libvirt will use unsafe live migration. Please refer to
++the libvirt documentation for details on unsafe live migration.
++</longdesc>
++<shortdesc lang="en">Enable unsafe live migration</shortdesc>
++<content type="boolean" default="false" />
++</parameter>
++
+ <parameter name="monitor_scripts" unique="0" required="0">
+ <longdesc lang="en">
+ To additionally monitor services within the virtual domain, add this
+@@ -528,10 +539,16 @@
+ 		fi
+ 		# Scared of that sed expression? So am I. :-)
+ 		remoteuri=$(echo ${OCF_RESKEY_hypervisor} | sed -e "s,\(.*\)://[^/:]*\(:\?[0-9]*\)/\(.*\),\1${transport_suffix}://${target_node}\2/\3,")
++		# Should we do an unsafe migration?
++		if ocf_is_true "$OCF_RESKEY_migration_unsafe"; then
++			migration_unsafe="--unsafe"
++		else
++			migration_unsafe=""
++		fi
+ 
+ 		# OK, we know where to connect to. Now do the actual migration.
+ 		ocf_log info "$DOMAIN_NAME: Starting live migration to ${target_node} (using remote hypervisor URI ${remoteuri} ${migrateuri})."
+-		virsh ${VIRSH_OPTIONS} migrate --live $DOMAIN_NAME ${remoteuri} ${migrateuri}
++		virsh ${VIRSH_OPTIONS} migrate --live ${migration_unsafe} $DOMAIN_NAME ${remoteuri} ${migrateuri}
+ 		rc=$?
+ 		if [ $rc -ne 0 ]; then
+ 			ocf_exit_reason "$DOMAIN_NAME: live migration to ${remoteuri} ${migrateuri} failed: $rc"
