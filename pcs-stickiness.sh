@@ -1,9 +1,18 @@
 #!/bin/sh
 
+# Set resource-stickiness to zero and after timeout sets it back to higher value,
+# allowing resources to move due to location constraints.
+
+# Version: 20150924
+
+########################
+
 # timeout
 TIMEOUT="60"
 # resource-stickiness
 RS="100"
+
+#########################
 
 if [ "$1" = "-f" ]; then
     RSF="YES"
@@ -19,8 +28,8 @@ elif [ -n "$1" ]; then
     exit 1
 fi
 
-if [ "$RSF" != "YES" ] && crm_mon -1n | grep -qE ':[[:space:]]+(offline|Stopped|Failed)[[:space:]]*$'; then
-    echo "Cluster has offline node or stopped/failed resources/actions. Exiting"
+if [ "$RSF" != "YES" ] && crm_mon -1n | grep -qE ':[[:space:]]+(OFFLINE(| \(standby\))|standby|Stopped|Failed)[[:space:]]*$'; then
+    echo "Cluster has offline/standby nodes or stopped/failed resources/actions. Exiting"
     exit 1
 fi
 
