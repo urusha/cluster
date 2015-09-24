@@ -4,9 +4,14 @@
 # * <memory> value from domain's xml by default;
 # * <currentMemory> value from domain's xml, if there is offline/standby node or if "-d" provided as argument.
 
-# Version: 20150924
+# Version: 20150924_1
 
 export LANG=C
+
+if ! crm_mon -1n | grep -q "^Node `hostname`"' ([0-9]\+): online$'; then
+    echo "This node is not online. Exiting"
+    exit 1
+fi
 
 if crm_mon -1n | grep -qE ':[[:space:]]+(Stopped|Failed)[[:space:]]*$'; then
     echo "Cluster has stopped/failed resources/actions. Exiting"
