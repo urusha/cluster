@@ -1,9 +1,13 @@
 #!/bin/sh
 
+# Verify DRBD resources and restart pacemaker if required
+
+# Version: 20150924
+
 export LANG=C
 
-if crm_mon -1n | grep -qE ':[[:space:]]+(offline|Stopped|Failed)[[:space:]]*$'; then
-    echo "Cluster has offline node or stopped/failed resources/actions. Exiting"
+if crm_mon -1n | grep -qE ':[[:space:]]+(OFFLINE(| \(standby\))|standby|Stopped|Failed)[[:space:]]*$'; then
+    echo "Cluster has offline/standby node or stopped/failed resources/actions. Exiting"
     exit 1
 fi
 
