@@ -1,9 +1,19 @@
 #!/bin/sh
 
+# Move resource with cleaning its status up
+# and clearing its temporary location constraints.
+
+# Version: 20150924
+
 [ -z "$1" ] && echo "Usage: `basename $0` resource [node]" >&2 && exit 1
 
-if [ "`crm_mon -1n | grep 'Node .*: online$' | wc -l`" -gt 1 ]; then
+if [ "`crm_mon -1n | grep 'Node .*: online$' | wc -l`" -lt 2 ]; then
     echo "No node to migrate to. Exiting..."
+    exit 1
+fi
+
+if [ -n "$2" ] && crm_mon -1n | grep -q "Node $2: online$"; then
+    echo "Node '$2' is not online. Exiting..."
     exit 1
 fi
 
