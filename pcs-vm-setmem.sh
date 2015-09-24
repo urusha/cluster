@@ -2,7 +2,9 @@
 
 # Set VMs memory to:
 # * <memory> value from domain's xml by default;
-# * <currentMemory> value from domain's xml, if there is offline node or if "-d" provided as argument.
+# * <currentMemory> value from domain's xml, if there is offline/standby node or if "-d" provided as argument.
+
+# Version: 20150924
 
 export LANG=C
 
@@ -11,7 +13,7 @@ if crm_mon -1n | grep -qE ':[[:space:]]+(Stopped|Failed)[[:space:]]*$'; then
     exit 1
 fi
 
-if crm_mon -1n | grep -qi ': offline' || [ "$1" = '-d' ]; then
+if crm_mon -1n | grep -qE ':[[:space:]]+(OFFLINE(| \(standby\))|standby)[[:space:]]*$' || [ "$1" = '-d' ]; then
     SETMEM='def'
 else
     SETMEM='max'
