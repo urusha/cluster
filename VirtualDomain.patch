@@ -1,5 +1,5 @@
---- /usr/lib/ocf/resource.d/heartbeat/VirtualDomain.old	2015-07-11 23:34:26.962727858 +0300
-+++ /usr/lib/ocf/resource.d/heartbeat/VirtualDomain	2015-07-12 00:11:12.000000000 +0300
+--- a/usr/lib/ocf/resource.d/heartbeat/VirtualDomain	2015-07-11 23:34:26.962727858 +0300
++++ b/usr/lib/ocf/resource.d/heartbeat/VirtualDomain	2015-07-12 00:11:12.000000000 +0300
 @@ -21,12 +21,14 @@
  OCF_RESKEY_autoset_utilization_cpu_default="true"
  OCF_RESKEY_autoset_utilization_hv_memory_default="true"
