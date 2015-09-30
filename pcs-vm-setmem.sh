@@ -4,11 +4,11 @@
 # * <memory> value from domain's xml by default;
 # * <currentMemory> value from domain's xml, if there is offline/standby node or if "-d" provided as argument.
 
-# Version: 20150924_1
+# Version: 20150925
 
 export LANG=C
 
-if ! crm_mon -1n | grep -q "^Node `hostname`"' ([0-9]\+): online$'; then
+if ! crm_mon -1n | grep -q "^Node `hostname`"': online$'; then
     echo "This node is not online. Exiting"
     exit 1
 fi
