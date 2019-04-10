@@ -3,7 +3,7 @@ cluster
 
 Pacemaker stuff
 
-* fence_energenie - fence agent for EnerGenie EG-PDU-001 and similar. 7.0 release
+* fence_energenie_7.0 - fence agent for EnerGenie EG-PDU-001 and similar. 7.0 release
 * fence_energenie_7.1 - fence agent for EnerGenie EG-PDU-001 and similar. 7.1 release
 * fence_energenie_7.6 - fence agent for EnerGenie EG-PDU-001 and similar. 7.6 release
 * pcmk_smtp_helper.sh - ocf:pacemaker:ClusterMon smtp helper
